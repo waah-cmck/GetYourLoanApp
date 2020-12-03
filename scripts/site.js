@@ -7,7 +7,7 @@ class LoanApplication {
     LoanPurpose;
     LoanAmount;
 }
-
+console.log('hello');
 var LoanApplicationList = [];
 
 //fires when the page loads
