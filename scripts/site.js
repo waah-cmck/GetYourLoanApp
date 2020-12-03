@@ -51,12 +51,12 @@ function initializeLoans() {
     LoanApplicationList[2] = la3;
 }
 
-function create_UUID(){
+function create_UUID() {
     var dt = new Date().getTime();
-    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = (dt + Math.random()*16)%16 | 0;
-        dt = Math.floor(dt/16);
-        return (c=='x' ? r :(r&0x3|0x8)).toString(16);
+    const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = (dt + Math.random() * 16) % 16 | 0;
+        dt = Math.floor(dt / 16);
+        return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
     });
     return uuid;
 }
@@ -73,9 +73,9 @@ function bindLoansToDropDown() {
 
 
     for (var i = 0; i < LoanApplicationList.length; i++) {
-        var la = LoanApplicationList[i];
+        let la = LoanApplicationList[i];
 
-        var el = document.createElement("option");
+        let el = document.createElement("option");
         el.textContent = "Application of " + la.ApplicantName;
         el.value = la.Id.toString();
         dropDown.appendChild(el);
@@ -90,11 +90,11 @@ function loadApplication() {
 
     if (la != undefined) {
 
-        var isEmployed = la.Factors[0];
-        var hasKids = la.Factors[1];
-        var hasLoans = la.Factors[2];
-        var hasCreditcards = la.Factors[3];
-
+        var [isEmployed,
+            hasKids,
+            hasLoans,
+            hasCreditcards
+        ] = la.Factors;
 
         document.getElementById("inputName").value = la.ApplicantName;
         document.getElementById("inputDoBMonth").value = la.ApplicantDateOfBirth.getMonth() + 1;
@@ -111,7 +111,7 @@ function loadApplication() {
 
         var riskLabel = document.getElementById("riskSummary");
         riskLabel.style.display = "block";
-        riskLabel.innerText = generateRickProfile(la); 
+        riskLabel.innerHTML = generateRickProfile(la);
 
     }
 }
@@ -133,13 +133,13 @@ function saveApplication() {
 
         var riskLabel = document.getElementById("riskSummary");
         riskLabel.style.display = "block";
-        riskLabel.innerText = generateRickProfile(newLa);    
+        riskLabel.innerText = generateRickProfile(newLa);
 
         LoanApplicationList.push(newLa);
 
         bindLoansToDropDown();
 
-    }else {
+    } else {
         document.getElementById("riskSummary").style.display = "none";
     }
 }
@@ -153,7 +153,7 @@ function clearApplication() {
     document.getElementById("IsEmployed").checked = false;
     document.getElementById("HasKids").checked = false;
     document.getElementById("HasLoans").checked = false;
-    document.getElementById("HasCreditcards").checked = false;    
+    document.getElementById("HasCreditcards").checked = false;
     document.getElementById("inputLoanPurpose").value = "";
     document.getElementById("inputLoanAmount").value = "";
 
@@ -180,17 +180,17 @@ function getLoanApplicationDataFromInputs() {
     var year = document.getElementById("inputDoBYear").value;
 
     var isEmployed = document.getElementById("IsEmployed").checked;
-    var hasKids =  document.getElementById("HasKids").checked;
+    var hasKids = document.getElementById("HasKids").checked;
     var hasLoans = document.getElementById("HasLoans").checked;
-    var hasCreditcards = document.getElementById("HasCreditcards").checked;   
-    
-    
+    var hasCreditcards = document.getElementById("HasCreditcards").checked;
+
+
     la.Factors[0] = isEmployed;
     la.Factors[1] = hasKids;
     la.Factors[2] = hasLoans;
-    la.Factors[3] = hasCreditcards;    
+    la.Factors[3] = hasCreditcards;
 
-    if (month != "" && day != "" && year != "") {
+    if (Number.isInteger(month) && Number.isInteger(day) && Number.isInteger(year)) {
         la.ApplicantDateOfBirth = new Date(year, month, day);
     }
 
@@ -199,6 +199,7 @@ function getLoanApplicationDataFromInputs() {
     la.LoanAmount = document.getElementById("inputLoanAmount").value;
 
     return la;
+    
 }
 
 function validateApplication() {
@@ -209,52 +210,52 @@ function validateApplication() {
 
     if (la.ApplicantName == "") {
         document.getElementById("inputNameValidation")
-        .style.display = "block";
+            .style.display = "block";
 
         valid = false;
     } else {
         document.getElementById("inputNameValidation")
-        .style.display = "none";
+            .style.display = "none";
     }
 
     if (la.ApplicantDateOfBirth == undefined) {
         document.getElementById("inputDoBValidation")
-        .style.display = "block";
+            .style.display = "block";
 
         valid = false;
     } else {
         document.getElementById("inputDoBValidation")
-        .style.display = "none";
+            .style.display = "none";
     }
 
     if (la.ApplicantAnnualIncome == "") {
         document.getElementById("inputAnnualIncomeValidation")
-        .style.display = "block";
+            .style.display = "block";
 
         valid = false;
     } else {
         document.getElementById("inputAnnualIncomeValidation")
-        .style.display = "none";
+            .style.display = "none";
     }
 
     if (la.LoanPurpose == "") {
         document.getElementById("inputLoanPurposeValidation")
-        .style.display = "block";
+            .style.display = "block";
 
         valid = false;
     } else {
         document.getElementById("inputLoanPurposeValidation")
-        .style.display = "none";
+            .style.display = "none";
     }
 
     if (la.LoanAmount == "") {
         document.getElementById("inputLoanAmountValidation")
-        .style.display = "block";
+            .style.display = "block";
 
         valid = false;
     } else {
         document.getElementById("inputLoanAmountValidation")
-        .style.display = "none";
+            .style.display = "none";
     }
 
     return valid;
@@ -263,25 +264,22 @@ function validateApplication() {
 function generateRickProfile(la) {
     var risk = 3;
 
-    var nameAndTitle = la.ApplicantName;
+    var nameAndTitle = la.ApplicantName.trim().toLowerCase();
 
-    var indexOfMD = nameAndTitle.search("MD");
-    var indexOfMD2 = nameAndTitle.search("M.D");
-    var indexOfMD3 = nameAndTitle.search("M.D.");
-    var indexOfPhD = nameAndTitle.search("PhD");
-    var indexOfPhD2 = nameAndTitle.search("Ph.D");
-    var indexOfPhD3 = nameAndTitle.search("PHD");
-    var indexOfDr = nameAndTitle.search("Dr.");
-    var indexOfDr2 = nameAndTitle.search("DR.");
+    let dr = nameAndTitle.startsWith("dr");
+    let phd = nameAndTitle.startsWith("phd");
+    let phd2 = nameAndTitle.startsWith("ph.d");
 
-    if (indexOfMD > -1 || indexOfMD2 > -1 || indexOfMD3 > -1 
-        || indexOfPhD > -1 || indexOfPhD2 > -1 
-        || indexOfPhD3 > -1 || indexOfDr > -1 || indexOfDr2 > -1) {
+    let md = nameAndTitle.endsWith("md");
+    let md2 = nameAndTitle.endsWith("m.d");
+    let md3 = nameAndTitle.endsWith("m.d.");
+
+    if (dr || phd || phd2 || md || md2 || md3) {
 
         risk = risk - 1;
     }
 
-    var age = new Date().getFullYear() - 
+    var age = new Date().getFullYear() -
         la.ApplicantDateOfBirth.getFullYear();
 
     if (age > 60) {
@@ -308,40 +306,36 @@ function generateRickProfile(la) {
         risk = risk + 1;
     }
 
-    var purpose = la.LoanPurpose;
+    var purpose = la.LoanPurpose.trim().toLowerCase();
 
-    var indexOfHouse = purpose.search("House");
-    var indexOfHouse2 = purpose.search("house");
-    var indexOfHoliday = purpose.search("Holiday");
-    var indexOfHoliday2 = purpose.search("holiday");
-    var indexOfHoliday3 = purpose.search("vacation");
-    var indexOfHoliday4 = purpose.search("Vacation");
-    var indexOfBusiness = purpose.search("Business");
-    var indexOfBusiness2 = purpose.search("business");
 
-    if (indexOfHouse > -1 || indexOfHouse2 > -1) {
+    let house = purpose.includes("house");
+    let holiday = purpose.includes("holiday");
+    let vacation = purpose.includes("vacation");
+    let business = purpose.includes("business");
+
+    if (house) {
         //the loan will be used for a house or building project
         risk = risk + 2;
     }
 
-    if (indexOfHoliday > -1 || indexOfHoliday2 > -1 
-        || indexOfHoliday3 > -1 || indexOfHoliday4 > -1) {
+    if (holiday || vacation) {
         //the loan will be used for a holiday
         risk = risk + 3;
     }
 
-    if (indexOfBusiness > -1 || indexOfBusiness2 > -1) {
+    if (business) {
         //the loan will be used for a business
         risk = risk + 1;
     }
 
-    
+
     var reviewText = "";
 
     if (age < 18) {
         reviewText = "your application will not be reviewed, because you have to be 18 years or older.";
     } else {
-        reviewText = "your application will be reviewed.";
+        reviewText = "your application will be reviewed";
     }
 
     var riskProfile = "";
@@ -350,16 +344,40 @@ function generateRickProfile(la) {
         riskProfile = "very low";
     } else if (risk < 5) {
         riskProfile = "low";
-    }else if (risk < 8) {
+    } else if (risk < 8) {
         riskProfile = "medium";
-    }else if (risk < 12) {
+    } else if (risk < 12) {
         riskProfile = "high";
     }
 
-    var summaryText = "Dear " + la.ApplicantName + ", " + reviewText + " Your risk profile is " + riskProfile;
+    var applicationCode = String.raw`\t${createApplicationId()}`
+
+    var summaryText = highlightText`Dear ${la.ApplicantName}, <br> 
+    your application for ${"$" + la.LoanAmount}, ${reviewText}. <br> 
+     Your risk profile is ${riskProfile}<br> 
+     Your unique application code is ${applicationCode}`;
 
     return summaryText;
 }
 
+function highlightText(strings, ...values) {
+    let str = "";
+    for (var i = 0; i < strings.raw.length; i++) {
+        if (i > 0) {
+            str += `<b>${values[i - 1]}</b>`
+        }
+        str += strings.raw[i];
+    }
+    return str;
+}
 
+function createApplicationId() {
+    var result = '';
+    var characters = 'ABCDEUVYZabcdrsqxyz01789/\\#@$%()*^!';
+    var characterLength = characters.length;
+    for (var i = 0; i < 8; i++) {
+        result += characters.charAt(Math.floor(Math.random() * characters.length))
+    }
+    return result;
+}
 
